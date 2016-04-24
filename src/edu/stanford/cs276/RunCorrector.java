@@ -56,6 +56,7 @@ public class RunCorrector {
     // Load models from disk
     System.out.println("Loading Language Model...");
     languageModel = LanguageModel.load();
+    System.out.println("Done Loading Language Model");
     nsm = NoisyChannelModel.load();
     BufferedReader queriesFileReader = new BufferedReader(new FileReader(new File(queryFilePath)));
     nsm.setProbabilityType(uniformOrEmpirical);

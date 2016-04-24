@@ -69,6 +69,10 @@ public class LanguageModel implements Serializable {
 		System.out.println("Done.");
 	}
 	
+	public int counts(String word) {
+		return unigram.count(word);
+	}
+	
 	public  boolean wordExists(String word) {
 		return unigram.count(word) != 0;
 //		int count = unigram.count(word);

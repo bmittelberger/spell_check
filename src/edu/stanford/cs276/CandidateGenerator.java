@@ -1,6 +1,7 @@
 package edu.stanford.cs276;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,19 +26,43 @@ public class CandidateGenerator implements Serializable {
 			'9', ' ', ',' };
 
 	// Generate all candidates for the target query
-	public Set<String[]> getCandidates(String query, LanguageModel lm) throws Exception {
-		Set<String[]> candidates = new HashSet<String[]>();
+	public Set<ArrayList<String>> getCandidates(String query, LanguageModel lm) throws Exception {
+		Set<ArrayList<String> > candidates = new HashSet<ArrayList<String> >();
 
 		
-		Set<String[]> prevCands = null;
+		Set<ArrayList<String> > prevCands = null;
 		String[] queryWords = query.trim().split(" ");
 		for (String word : queryWords) {
 			Set<String> wordCands = generateCandidateWords(word, lm);
+			if (lm.wordExists(word)) {
+				wordCands.add(word);
+			}
 			if (prevCands != null) {
+				Set<ArrayList<String> > currSet = new HashSet<ArrayList<String>>();
+				for (String candidate : wordCands) {
+					for (ArrayList<String> candQuery: prevCands) {
+						ArrayList<String> newCandQuery = new ArrayList<String>(candQuery);
+						newCandQuery.add(candidate);
+						currSet.add(newCandQuery);
+					}
+				}
+				prevCands = currSet;
+			} else {
+				prevCands = new HashSet<ArrayList<String> >();
+				for (String candidate: wordCands) {
+					ArrayList<String> newQuery = new ArrayList<String>();
+					newQuery.add(candidate);
+					prevCands.add(newQuery);
+				}
 				
 			}
 		}
+		candidates = prevCands;
 
+//		System.out.println("Printing candidate queries :\n");
+//		for (ArrayList<String> candidateQuery : candidates) {
+//			System.out.println(candidateQuery.toString());
+//		}
 		return candidates;
 	}
 
@@ -55,7 +80,7 @@ public class CandidateGenerator implements Serializable {
 			}
 			
 			if (lm.wordExists(deleteWord)) {
-				System.out.println("Delete[" + word.charAt(i) + "] : " + deleteWord);
+//				System.out.println("Delete[" + word.charAt(i) + "] : " + deleteWord + " total: " + counts);
 				candidates.add(deleteWord);
 			}
 			
@@ -78,11 +103,11 @@ public class CandidateGenerator implements Serializable {
 
 				if (lm.wordExists(insertWord)) {
 					candidates.add(insertWord);
-					System.out.println("Insert[" + c + "] : " + insertWord);
+//					System.out.println("Insert[" + c + "] : " + insertWord + " total: " + counts);
 				}
 				
 				if (lm.wordExists(replaceWord)) {
-					System.out.println("Replace[" + word.charAt(i) + "][" + c + "]: " + replaceWord);
+//					System.out.println("Replace[" + word.charAt(i) + "][" + c + "]: " + replaceWord + " total: " + counts);
 					candidates.add(replaceWord);
 				}
 				
@@ -94,7 +119,7 @@ public class CandidateGenerator implements Serializable {
 					+ word.substring(i + 2);
 			if (lm.wordExists(transposeWord)) {
 				candidates.add(transposeWord);
-				System.out.println("Transpose[" + word + "] --> " + transposeWord);
+//				System.out.println("Transpose[" + word + "] --> " + transposeWord + " total: " + counts);
 			}
 		}
 
