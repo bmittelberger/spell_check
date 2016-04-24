@@ -43,10 +43,10 @@ public class CandidateGenerator implements Serializable {
     
     for (int i = 0 ; i < wordLen; i++) {
     	String deleteWord = null;
-    	if (i != 0) {
-    		deleteWord = word.substring(0,i-1) + word.substring(i); //delete
+    	if (i != wordLen - 1) {
+    		deleteWord = word.substring(0,i) + word.substring(i + 1); //delete
     	} else {
-    		deleteWord = word.substring(1);
+    		deleteWord = word.substring(0,i);
     	}
         System.out.println("Delete[" + word.charAt(i) + "] : " + deleteWord);
     	candidates.add(deleteWord);
@@ -57,10 +57,11 @@ public class CandidateGenerator implements Serializable {
         String insertWord = "";
         String replaceWord = "";
         if (i == 0) {
-
+        	insertWord = c + word;
+        	replaceWord = c + word.substring(1);
         } else if (i == wordLen -1 ){
           insertWord = word + c;
-          replaceWord = word.substring(0,i-1) + c + word.substring(i);
+          replaceWord = word.substring(0,i) + c;
         } else {
           insertWord = word.substring(0,i) + c + word.substring(i); //insert
           replaceWord = word.substring(0,i-1) + c + word.substring(i);

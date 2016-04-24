@@ -54,15 +54,13 @@ public class LanguageModel implements Serializable {
       BufferedReader input = new BufferedReader(new FileReader(file));
       String line = null;
       while ((line = input.readLine()) != null) {
-        String prevWord = null;
+        String prevWord = "beginbegin";
         String[] words = line.trim().split("\\s+");
         for (String word : words) {
           unigram.add(word);
-          if (prevWord != null) {
-            String pair = word + "," + prevWord;
-            bigram.add(pair);
-          }
-          prevWord = word;
+	        String pair = word + "," + prevWord;
+	        bigram.add(pair);
+	        prevWord = word;
         }
       }
       input.close();
