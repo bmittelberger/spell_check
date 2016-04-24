@@ -69,9 +69,16 @@ public class LanguageModel implements Serializable {
 		System.out.println("Done.");
 	}
 	
-//	public boolean wordExists(String word) {
-//		return 
-//	}
+	public  boolean wordExists(String word) {
+		return unigram.count(word) != 0;
+//		int count = unigram.count(word);
+//		if (count > 0) {
+//			System.out.println("found: " + word);
+//			return true;
+//		}
+//		System.out.println("did not find: " + word);
+//		return false;
+	}
 
 	/**
 	 * Loads the language model object (and all associated data) from disk
@@ -82,12 +89,14 @@ public class LanguageModel implements Serializable {
 				FileInputStream fiA = new FileInputStream(Config.languageModelFile);
 				ObjectInputStream oisA = new ObjectInputStream(fiA);
 				lm_ = (LanguageModel) oisA.readObject();
+				
 			}
 		} catch (Exception e) {
 			throw new Exception("Unable to load language model.  You may have not run build corrector");
 		}
 		return lm_;
 	}
+	
 
 	/**
 	 * Saves the object (and all associated data) to disk

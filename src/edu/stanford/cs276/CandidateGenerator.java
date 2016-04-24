@@ -25,18 +25,23 @@ public class CandidateGenerator implements Serializable {
 			'9', ' ', ',' };
 
 	// Generate all candidates for the target query
-	public static Set<String> getCandidates(String query) throws Exception {
-		Set<String> candidates = new HashSet<String>();
+	public Set<String[]> getCandidates(String query, LanguageModel lm) throws Exception {
+		Set<String[]> candidates = new HashSet<String[]>();
 
+		
+		Set<String[]> prevCands = null;
 		String[] queryWords = query.trim().split(" ");
 		for (String word : queryWords) {
-			Set<String> wordCands = generateCandidateWords(word);
+			Set<String> wordCands = generateCandidateWords(word, lm);
+			if (prevCands != null) {
+				
+			}
 		}
 
 		return candidates;
 	}
 
-	private static Set<String> generateCandidateWords(String word) {
+	private Set<String> generateCandidateWords(String word, LanguageModel lm) {
 		Set<String> candidates = new HashSet<String>();
 		int wordLen = word.length();
 		System.out.println("Word: " + word);
@@ -48,8 +53,12 @@ public class CandidateGenerator implements Serializable {
 			} else {
 				deleteWord = word.substring(0, i);
 			}
-			System.out.println("Delete[" + word.charAt(i) + "] : " + deleteWord);
-			candidates.add(deleteWord);
+			
+			if (lm.wordExists(deleteWord)) {
+				System.out.println("Delete[" + word.charAt(i) + "] : " + deleteWord);
+				candidates.add(deleteWord);
+			}
+			
 		}
 
 		for (int i = 0; i < wordLen; i++) {
@@ -67,20 +76,26 @@ public class CandidateGenerator implements Serializable {
 					replaceWord = word.substring(0, i - 1) + c + word.substring(i);
 				}
 
-				System.out.println("Insert[" + c + "] : " + insertWord);
-				System.out.println("Replace[" + word.charAt(i) + "][" + c + "]: " + replaceWord);
-
-				candidates.add(insertWord);
-				candidates.add(replaceWord);
+				if (lm.wordExists(insertWord)) {
+					candidates.add(insertWord);
+					System.out.println("Insert[" + c + "] : " + insertWord);
+				}
+				
+				if (lm.wordExists(replaceWord)) {
+					System.out.println("Replace[" + word.charAt(i) + "][" + c + "]: " + replaceWord);
+					candidates.add(replaceWord);
+				}
+				
 			}
 
 		}
 		for (int i = 0; i < wordLen - 1; i++) {
 			String transposeWord = word.substring(0, i) + word.charAt(i + 1) + word.charAt(i)
 					+ word.substring(i + 2);
-			candidates.add(transposeWord);
-			System.out.println("Transpose[" + word + "] --> " + transposeWord);
-
+			if (lm.wordExists(transposeWord)) {
+				candidates.add(transposeWord);
+				System.out.println("Transpose[" + word + "] --> " + transposeWord);
+			}
 		}
 
 		return candidates;
