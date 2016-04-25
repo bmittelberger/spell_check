@@ -24,16 +24,26 @@ public class CandidateGenerator implements Serializable {
 	public static final Character[] alphabet = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
 			'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8',
 			'9', ' ', ',' };
+	
+	public static final Character[] noNumbers = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+			'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ', ',' };
 
 	// Generate all candidates for the target query
-	public Set<ArrayList<String>> getCandidates(String query, LanguageModel lm) throws Exception {
+	public Set<ArrayList<String>> getCandidates(String query) throws Exception {
+		LanguageModel lm = LanguageModel.load();
+		Character[] alphabetToUse = null;
 		Set<ArrayList<String> > candidates = new HashSet<ArrayList<String> >();
-
-		
 		Set<ArrayList<String> > prevCands = null;
 		String[] queryWords = query.trim().split(" ");
 		for (String word : queryWords) {
-			Set<String> wordCands = generateCandidateWords(word, lm);
+			
+			//If there are no digits in the word, it is unlikely that we should add any.
+			if (word.matches(".*\\d+.*")) {
+				alphabetToUse = alphabet;
+			} else {
+				alphabetToUse = noNumbers;
+			}
+			Set<String> wordCands = generateCandidateWords(word, lm, alphabetToUse);
 			if (lm.wordExists(word)) {
 				wordCands.add(word);
 			}
@@ -58,15 +68,10 @@ public class CandidateGenerator implements Serializable {
 			}
 		}
 		candidates = prevCands;
-
-//		System.out.println("Printing candidate queries :\n");
-//		for (ArrayList<String> candidateQuery : candidates) {
-//			System.out.println(candidateQuery.toString());
-//		}
 		return candidates;
 	}
 
-	private Set<String> generateCandidateWords(String word, LanguageModel lm) {
+	private Set<String> generateCandidateWords(String word, LanguageModel lm, Character[] alphabetToUse) {
 		Set<String> candidates = new HashSet<String>();
 		int wordLen = word.length();
 		System.out.println("Word: " + word);
@@ -78,16 +83,14 @@ public class CandidateGenerator implements Serializable {
 			} else {
 				deleteWord = word.substring(0, i);
 			}
-			
 			if (lm.wordExists(deleteWord)) {
-//				System.out.println("Delete[" + word.charAt(i) + "] : " + deleteWord + " total: " + counts);
 				candidates.add(deleteWord);
 			}
 			
 		}
 
 		for (int i = 0; i < wordLen; i++) {
-			for (Character c : alphabet) {
+			for (Character c : alphabetToUse) {
 				String insertWord = "";
 				String replaceWord = "";
 				if (i == 0) {
@@ -100,17 +103,12 @@ public class CandidateGenerator implements Serializable {
 					insertWord = word.substring(0, i) + c + word.substring(i); // insert
 					replaceWord = word.substring(0, i - 1) + c + word.substring(i);
 				}
-
 				if (lm.wordExists(insertWord)) {
 					candidates.add(insertWord);
-//					System.out.println("Insert[" + c + "] : " + insertWord + " total: " + counts);
-				}
-				
+				}				
 				if (lm.wordExists(replaceWord)) {
-//					System.out.println("Replace[" + word.charAt(i) + "][" + c + "]: " + replaceWord + " total: " + counts);
 					candidates.add(replaceWord);
 				}
-				
 			}
 
 		}
@@ -119,7 +117,6 @@ public class CandidateGenerator implements Serializable {
 					+ word.substring(i + 2);
 			if (lm.wordExists(transposeWord)) {
 				candidates.add(transposeWord);
-//				System.out.println("Transpose[" + word + "] --> " + transposeWord + " total: " + counts);
 			}
 		}
 

@@ -112,6 +112,14 @@ public class LanguageModel implements Serializable {
 		save.close();
 	}
 
+	public int unigramTermCount() {
+		return unigram.termCount();
+	}
+	
+	public int bigramTermCount() {
+		return bigram.termCount();
+	}
+	
 	/**
 	 * Creates a new LanguageModel object from a corpus. This method should be
 	 * used to create a new object rather than calling the constructor directly

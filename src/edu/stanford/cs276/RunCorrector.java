@@ -3,6 +3,8 @@ package edu.stanford.cs276;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Set;
 
 
 public class RunCorrector {
@@ -71,7 +73,7 @@ public class RunCorrector {
 
       String correctedQuery = query;
       System.out.println("query: " + query);
-      CandidateGenerator.get().getCandidates(query, languageModel);
+      Set<ArrayList<String> > candidates = CandidateGenerator.get().getCandidates(query);
 
       /*
        * Your code here: currently the correctQuery and original query are the same
