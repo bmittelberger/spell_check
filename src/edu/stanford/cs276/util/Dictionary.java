@@ -1,3 +1,5 @@
+
+
 package edu.stanford.cs276.util;
 
 import java.io.Serializable;
@@ -32,5 +34,9 @@ public class Dictionary implements Serializable {
     } else {
       return 0;
     }
+  }
+  
+  public int getTermCount(){
+	  return termCount;
   }
 }
