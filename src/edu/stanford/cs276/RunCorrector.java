@@ -11,7 +11,7 @@ public class RunCorrector {
   public static NoisyChannelModel nsm;
 
   public static void main(String[] args) throws Exception {
-    System.out.println("Staring Corrector...");
+    System.out.println("Starting Corrector...");
     // Parse input arguments
     String uniformOrEmpirical = null;
     String queryFilePath = null;
@@ -54,7 +54,9 @@ public class RunCorrector {
     }
 
     // Load models from disk
+    System.out.println("Loading Language Model...");
     languageModel = LanguageModel.load();
+    System.out.println("Done Loading Language Model");
     nsm = NoisyChannelModel.load();
     BufferedReader queriesFileReader = new BufferedReader(new FileReader(new File(queryFilePath)));
     nsm.setProbabilityType(uniformOrEmpirical);
@@ -69,7 +71,7 @@ public class RunCorrector {
 
       String correctedQuery = query;
       System.out.println("query: " + query);
-      CandidateGenerator.getCandidates(query);
+      CandidateGenerator.get().getCandidates(query, languageModel);
 
       /*
        * Your code here: currently the correctQuery and original query are the same

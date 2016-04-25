@@ -1,4 +1,4 @@
-*.cl:ass
+*.class
 languageModel
 noisyChannel
 # Mobile Tools for Java (J2ME)
