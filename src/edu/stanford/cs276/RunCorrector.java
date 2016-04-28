@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Set;
 
+import edu.stanford.cs276.util.Pair;
+
 
 public class RunCorrector {
 
@@ -79,23 +81,25 @@ public class RunCorrector {
       for (String w : q) {
     	  origQuery.add(w);
       }
-      Set<ArrayList<String> > candidates = CandidateGenerator.get().getCandidates(query);
-      UniformCostModel scorer = new UniformCostModel();
-      double maxScore = -1;
-      ArrayList<String> bestQuery = null;
-      for (ArrayList<String> candidate : candidates) {
-    	 double score = scorer.editProbability(origQuery, candidate, 1);
-//    	 System.out.println("Candidate Query: " + candidate.toString());
-//    	 System.out.println("Score: " + score);
-    	 if (score > maxScore) {
-    		 maxScore = score;
-    		 bestQuery = candidate;
-    	 }
-      }
+      Set <ArrayList <Pair <String, String> > > candidates = CandidateGenerator.get().getCandidates(query);
+      System.out.println("total size: " + candidates.size());
+//      Set<ArrayList<String> > candidates = CandidateGenerator.get().getCandidates(query);
+//      UniformCostModel scorer = new UniformCostModel();
+//      double maxScore = -1;
+//      ArrayList<String> bestQuery = null;
+//      for (ArrayList<String> candidate : candidates) {
+//    	 double score = scorer.editProbability(origQuery, candidate, 1);
+////    	 System.out.println("Candidate Query: " + candidate.toString());
+////    	 System.out.println("Score: " + score);
+//    	 if (score > maxScore) {
+//    		 maxScore = score;
+//    		 bestQuery = candidate;
+//    	 }
+//      }
       
-      System.out.println("Original Query: " + origQuery.toString());
-      System.out.println("Best Guess Query: " + bestQuery.toString());
-      System.out.println();
+//      System.out.println("Original Query: " + origQuery.toString());
+//      System.out.println("Best Guess Query: " + bestQuery.toString());
+//      System.out.println();
       /*
        * Your code here: currently the correctQuery and original query are the same
        * Complete this implementation so that the spell corrector corrects the 

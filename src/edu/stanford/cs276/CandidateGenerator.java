@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import edu.stanford.cs276.util.Pair;
+
 public class CandidateGenerator implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -30,71 +32,61 @@ public class CandidateGenerator implements Serializable {
 			'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ', ',' };
 
 	// Generate all candidates for the target query
-	public Set<ArrayList<String>> getCandidates(String query) throws Exception {
+	public Set<ArrayList<Pair <String, String> > > getCandidates(Set<ArrayList<Pair < String, String>  > > prevQueries, 
+				String word, String prevWord) throws Exception {
 		LanguageModel lm = LanguageModel.load();
 		Character[] alphabetToUse = null;
-		Set<ArrayList<String> > candidates = new HashSet<ArrayList<String> >();
-		Set<ArrayList<String> > prevCands = null;
-		String[] queryWords = query.trim().split(" ");
-		String prevQWord = null;
-		for (String word : queryWords) {
-			
-			//If there are no digits in the word, it is unlikely that we should add any.
-			if (word.matches(".*\\d+.*")) {
-				alphabetToUse = alphabet;
-			} else {
-				alphabetToUse = noNumbers;
-			}
-			Set<String> wordCands = generateCandidateWords(word, lm, alphabetToUse);
-			if (lm.wordExists(word)) {
-				wordCands.add(word);
-			}
-
-			System.out.println("Word: " + word + ", num candidates: " + wordCands.size());
-			// Perform Cartesian Product
-			if (prevCands != null) {
-				
-				Set<ArrayList<String> > currSet = new HashSet<ArrayList<String>>();
-				for (String candidate : wordCands) {
-
-					for (ArrayList<String> candQuery: prevCands) {
-						ArrayList<String> newCandQuery = new ArrayList<String>(candQuery);
-						
-						//in the case where we combine words
-						if (candQuery.get(candQuery.size() - 1).equals(prevQWord) && candidate.equals(word)) { 
-							String combined = prevQWord + word;
-							newCandQuery.set(candQuery.size() - 1, combined);
-						} else {
-							String[] words = candidate.split(" ");
-							if (words.length > 1) {
-								System.out.println("Adding words: " + words[0] + " and " + words[1]);
-								newCandQuery.add(words[0]);
-								newCandQuery.add(words[1]);
-							} else {
-								newCandQuery.add(candidate);
-							}
-						}
-						currSet.add(newCandQuery);
-					}
-				}
-				prevCands = currSet;
-			} else {
-				prevCands = new HashSet<ArrayList<String> >();
-				for (String candidate: wordCands) {
-					ArrayList<String> newQuery = new ArrayList<String>();
-					newQuery.add(candidate);
-					prevCands.add(newQuery);
-				}
-			}
-			System.out.println("set size for candidates: " + prevCands.size());
-			prevQWord = word;
+		Set<ArrayList<Pair<String, String> > >candidates = new HashSet<ArrayList<Pair<String, String> > >();
+		
+		
+		/prevWord are no digits in the word, it is unlikely that we should add any.
+		if (word.matches(".*\\d+.*")) {
+			alphabetToUse = alphabet;
+		} else {
+			alphabetToUse = noNumbers;
 		}
-		candidates = prevCands;
+		Set<Pair<String, String> > wordCands = generateCandidateWords(word, lm, alphabetToUse);
+		if (lm.wordExists(word)) {
+			wordCands.add(new Pair<String, String>(word, "none"));
+		}
+
+		
+		System.out.println("Word: " + word + ", num candidates: " + wordCands.size());
+		// Perform Cartesian Product
+		if (prevQueries != null) {
+			Set<ArrayList<Pair<String, String> > > currSet = new HashSet<ArrayList<Pair<String, String> > >();
+			for (Pair<String, String> candidate : wordCands) {
+
+				for (ArrayList<Pair<String, String> > candQuery: prevQueries) {
+					ArrayList<Pair<String, String> > newCandQuery = new ArrayList<Pair <String, String> >(candQuery);
+					
+					//in the case where we combine words
+					if (candQuery.get(candQuery.size() - 1).equals(prevWord) && candidate.equals(word)) { 
+						String combined = prevWord + word;
+						String edit = "del-" + prevWord.charAt(prevWord.length() - 1) + "- ";
+						newCandQuery.set(candQuery.size() - 1, new Pair<String, String>(combined, edit));
+					} else {
+						newCandQuery.add(candidate);
+					}
+					currSet.add(newCandQuery);
+				}
+			}
+			prevQueries = currSet;
+		} else {
+			prevQueries = new HashSet<ArrayList<Pair<String, String>> >();
+			for (Pair<String, String> candidate: wordCands) {
+				ArrayList<Pair<String, String> > newQuery = new ArrayList<Pair<String, String> >();
+				newQuery.add(candidate);
+				prevQueries.add(newQuery);
+			}
+		}
+		
+		candidates = prevQueries;
 		return candidates;
 	}
 
-	private Set<String> generateCandidateWords(String word, LanguageModel lm, Character[] alphabetToUse) {
-		Set<String> candidates = new HashSet<String>();
+	private Set<Pair<String, String> > generateCandidateWords(String word, LanguageModel lm, Character[] alphabetToUse) {
+		Set<Pair<String, String>> candidates = new HashSet<Pair<String, String>>();
 		int wordLen = word.length();
 		System.out.println("Word: " + word);
 
@@ -106,8 +98,11 @@ public class CandidateGenerator implements Serializable {
 			} else {
 				deleteWord = word.substring(0, i);
 			}
+			
 			if (lm.unigram.count(deleteWord) > MIN_RELEVANCE_THRESHOLD) {
-				candidates.add(deleteWord);
+				String edit = this.createEdit("del", word, i, word.charAt(i));
+				Pair<String, String> deletePair = new Pair<String, String>(deleteWord, edit);
+				candidates.add(deletePair);
 			}
 			
 		}
@@ -117,20 +112,29 @@ public class CandidateGenerator implements Serializable {
 			for (Character c : alphabetToUse) {
 				String insertWord = "";
 				String replaceWord = "";
-				insertWord = word.substring(0, i + 1) + c + word.substring(i + 1); 
+				if (i == wordLen - 1) {
+					insertWord = word + c;
+				} else {
+					insertWord = word.substring(0, i) + c + word.substring(i); 
+				}
 				replaceWord = word.substring(0, i) + c + word.substring(i + 1);
+
 				if (c.equals(' ')) {
 					String[] words = insertWord.split(" ");
 					if (words.length > 1 && lm.unigram.count(words[0]) > MIN_RELEVANCE_THRESHOLD
 							&& lm.unigram.count(words[1]) > MIN_RELEVANCE_THRESHOLD) {
-						System.out.println(word);
-						candidates.add(word);
+						String edit = this.createEdit("ins", word, i + 1, c);
+						candidates.add(new Pair<String, String>(insertWord, edit));
 					}
 				} else if (lm.unigram.count(insertWord) > MIN_RELEVANCE_THRESHOLD) {
-					candidates.add(insertWord);
+					String edit = this.createEdit("ins", word, i + 1, c);
+					candidates.add(new Pair<String, String>(insertWord, edit));
 				}				
 				if (lm.unigram.count(replaceWord) > MIN_RELEVANCE_THRESHOLD) {
-					candidates.add(replaceWord);
+					String edit = "rep-";
+					edit += word.charAt(i);
+					edit += "-" + c;
+					candidates.add(new Pair<String, String>(replaceWord, edit));
 				}
 			}
 		}
@@ -140,11 +144,32 @@ public class CandidateGenerator implements Serializable {
 			String transposeWord = word.substring(0, i) + word.charAt(i + 1) + word.charAt(i)
 					+ word.substring(i + 2);
 			if (lm.unigram.count(transposeWord) > MIN_RELEVANCE_THRESHOLD) {
-				candidates.add(transposeWord);
+				String edit = this.createEdit("tra", word, i+1, word.charAt(i+1));
+				candidates.add(new Pair<String, String>(transposeWord, edit));
 			}
 		}
 
 		return candidates;
+	}
+	
+	String createEdit(String type, String word, int i, Character editChar) {
+		String edit = type + "-";
+		if (type.equals("del") || type.equals("tra")) {
+			if (i == 0) {
+				edit += "BEGIN$";
+			} else {
+				edit += word.charAt(i - 1);
+			}
+			edit += "-" + editChar;
+		} else {
+			if (i - 1 == 0) {
+				edit += "BEGIN$";
+			} else {
+				edit += word.charAt(i - 1);
+			}
+			edit += "-" + editChar;
+		}
+		return edit;
 	}
 
 }
