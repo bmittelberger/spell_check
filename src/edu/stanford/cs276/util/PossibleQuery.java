@@ -52,6 +52,17 @@ public class PossibleQuery implements Comparable<PossibleQuery> {
 		  return sb.toString();
 	}
 	
+	public String asQuery() {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < this.query.size(); i++) {
+			sb.append(this.query.get(i).getFirst());
+			if (i < this.query.size() - 1) {
+				sb.append(" ");
+			}
+		}
+		return sb.toString();
+	}
+	
 	
 	
 }

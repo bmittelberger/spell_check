@@ -59,7 +59,7 @@ public class LanguageModel implements Serializable {
 				String[] words = line.trim().split("\\s+");
 				for (String word : words) {
 					unigram.add(word);
-					String pair = word + "," + prevWord;
+					String pair = prevWord + "," + word;
 					bigram.add(pair);
 					prevWord = word;
 				}

@@ -27,10 +27,10 @@ public class CandidateGenerator implements Serializable {
 
 	public static final Character[] alphabet = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
 			'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8',
-			'9', ' ', ',' };
+			'9', ' ', ',', '\'' };
 	
 	public static final Character[] noNumbers = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-			'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ', ',' };
+			'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ', ',', '\''};
 
 	// Generate all candidates for the target query
 	public Set<PossibleQuery > getCandidates(Set<PossibleQuery > prevQueries, 
@@ -55,31 +55,35 @@ public class CandidateGenerator implements Serializable {
 		}
 		 
 		if (lm.wordExists(word)) {
-			System.out.println("**** adding: " + word);
 			wordCands.add(new Pair<String, String>(word, "none"));
 		}
 
 		
-
 		
-		System.out.println("Word: " + word + ", num candidates: " + wordCands.size());
+		
+		
 		// Perform Cartesian Product
 		if (prevQueries != null) {
+			
+			//Check to see if we want to combine words
+			String combined = prevWord + word;
 			Set<PossibleQuery > currSet = new HashSet<PossibleQuery >();
+			if (lm.unigram.count(combined) > MIN_RELEVANCE_THRESHOLD) {
+				for (PossibleQuery pq : prevQueries) {
+					ArrayList<Pair<String, String> > candQuery = pq.getQuery();
+					ArrayList<Pair<String, String> > newCandQuery = new ArrayList<Pair <String, String> >(candQuery);
+					String edit = "del-" + prevWord.charAt(prevWord.length() - 1) + "- ";
+					newCandQuery.set(candQuery.size() - 1, new Pair<String, String>(combined, edit));
+					currSet.add(new PossibleQuery(newCandQuery));
+				}
+			}
+			
+			//Find the rest of the cartesian products
 			for (Pair<String, String> candidate : wordCands) {
-
 				for (PossibleQuery candQueryObj: prevQueries) {
 					ArrayList<Pair<String, String> > candQuery = candQueryObj.getQuery();
 					ArrayList<Pair<String, String> > newCandQuery = new ArrayList<Pair <String, String> >(candQuery);
-					
-					//in the case where we combine words
-					if (candQuery.get(candQuery.size() - 1).equals(prevWord) && candidate.equals(word)) { 
-						String combined = prevWord + word;
-						String edit = "del-" + prevWord.charAt(prevWord.length() - 1) + "- ";
-						newCandQuery.set(candQuery.size() - 1, new Pair<String, String>(combined, edit));
-					} else {
-						newCandQuery.add(candidate);
-					}
+					newCandQuery.add(candidate);
 					currSet.add(new PossibleQuery(newCandQuery));
 				}
 			}
@@ -98,7 +102,6 @@ public class CandidateGenerator implements Serializable {
 	private Set<Pair<String, String> > generateCandidateWords(String word, LanguageModel lm, Character[] alphabetToUse) {
 		Set<Pair<String, String>> candidates = new HashSet<Pair<String, String>>();
 		int wordLen = word.length();
-		System.out.println("Word: " + word);
 
 		//Deletions
 		for (int i = 0; i < wordLen; i++) {

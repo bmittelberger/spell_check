@@ -17,7 +17,7 @@ public class RunCorrector {
 	public static LanguageModel languageModel;
 	public static NoisyChannelModel nsm;
 
-	private static int PRUNING_THRESHOLD = 100;
+	private static int PRUNING_THRESHOLD = 30;
 
 	public static void main(String[] args) throws Exception {
     System.out.println("Starting Corrector...");
@@ -76,11 +76,14 @@ public class RunCorrector {
      * Each line in the file represents one query. We loop over each query and find
      * the most likely correction
      */
+    
+    double numCorrect = 0;
+    double totalQueries = 0;
+    
     while ((query = queriesFileReader.readLine()) != null) {
 
     
       String correctedQuery = query;
-      System.out.println("query: " + query);
       String[] q = query.split("\\s+");
       ArrayList<String> origQuery = new ArrayList<String>();
       Set< PossibleQuery > possibleQueries = null;
@@ -104,7 +107,6 @@ public class RunCorrector {
     		  pq.setScore(scorer.editProbability(origQuery, pq, 2));
     		  pruned.add(pq);
     	  }
-    	  System.out.println();
     	  
     	  PossibleQuery pq = null;
     	  Set<PossibleQuery> prunedQueries = new HashSet<PossibleQuery>();
@@ -117,40 +119,15 @@ public class RunCorrector {
       }
       
       double max = 0;
-      PossibleQuery best = null;
+      PossibleQuery best = new PossibleQuery(new Pair<String,String> ("",""));
       for (PossibleQuery pq : possibleQueries) {
   		if (pq.getScore() > max) {
   			best = pq;
   			max = pq.getScore();
   		}
       }
-      System.out.println();
-      System.out.println("Best Guess:" + best.toString());
       
       
-//      Set<ArrayList<String> > candidates = CandidateGenerator.get().getCandidates(query);
-//      UniformCostModel scorer = new UniformCostModel();
-//      double maxScore = -1;
-//      ArrayList<String> bestQuery = null;
-//      for (ArrayList<String> candidate : candidates) {
-//    	 double score = scorer.editProbability(origQuery, candidate, 1);
-////    	 System.out.println("Candidate Query: " + candidate.toString());
-////    	 System.out.println("Score: " + score);
-//    	 if (score > maxScore) {
-//    		 maxScore = score;
-//    		 bestQuery = candidate;
-//    	 }
-//      }
-      
-//      System.out.println("Original Query: " + origQuery.toString());
-//      System.out.println("Best Guess Query: " + bestQuery.toString());
-//      System.out.println();
-      /*
-       * Your code here: currently the correctQuery and original query are the same
-       * Complete this implementation so that the spell corrector corrects the 
-       * (possible) misspelled query
-       * 
-       */
       
       if ("extra".equals(extra)) {
         /*
@@ -165,7 +142,24 @@ public class RunCorrector {
       // If a gold file was provided, compare our correction to the gold correction
       // and output the running accuracy
       if (goldFileReader != null) {
+    	
         String goldQuery = goldFileReader.readLine();
+        
+        int diff = queryDiff(goldQuery, best.asQuery());
+        if (diff > 0) {
+        	System.out.println("MISMATCH:");
+        	System.out.println("ORIG: \"" + query + "\"");
+        	System.out.println("GOLD: \"" + goldQuery);
+        	System.out.println("YOUR: \"" + best.asQuery() + "\"");
+        	System.out.println();
+        	numCorrect--;
+        }
+//        int queryLen = goldQuery.split(" ").length;
+        totalQueries ++;
+        numCorrect ++;
+//        
+        
+        
         /*
          * You can do any bookkeeping you wish here - track accuracy, track where your solution
          * diverges from the gold file, what type of errors are more common etc. This might
@@ -178,17 +172,28 @@ public class RunCorrector {
        * IMPORTANT: In your final submission DO NOT add any additional print statements as 
        * this will interfere with the autograder
        */
-//      System.out.println(correctedQuery);
     }
+    
+    if (goldFilePath != null ){
+	    System.out.println("STATISTICS: ");
+	    System.out.println("TOTAL WORDS: " + Double.toString(totalQueries));
+	    System.out.println("NUM CORRECT: " + numCorrect);
+	    System.out.println("PCT CORRECT: " + Double.toString(numCorrect / totalQueries * 100) + "%" );
+    }
+    
+//    System.out.println("the are: " + languageModel.bigram.count("the,are"));
     queriesFileReader.close();
   }
 
-	public class QueryComparator implements Comparator<ArrayList<Pair<String, String>>> {
-
-		@Override
-		public int compare(ArrayList<Pair<String, String>> o1, ArrayList<Pair<String, String>> o2) {
-			// TODO Auto-generated method stub
-			return 0;
+	public static int queryDiff(String gold, String bestQuery) {
+		String[] goldWords = gold.split(" ");
+		String[] bestWords = bestQuery.split(" ");
+		int differences = 0;
+		for (int i = 0; i < goldWords.length && i < bestWords.length; i++) {
+			if (!goldWords[i].equals(bestWords[i])) {
+				differences++;
+			}
 		}
+		return differences;
 	}
 }
