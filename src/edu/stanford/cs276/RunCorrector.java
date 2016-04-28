@@ -14,6 +14,8 @@ public class RunCorrector {
   public static LanguageModel languageModel;
   public static NoisyChannelModel nsm;
 
+  private static int PRUNING_THRESHOLD = 100;
+  
   public static void main(String[] args) throws Exception {
     System.out.println("Starting Corrector...");
     // Parse input arguments
@@ -78,11 +80,18 @@ public class RunCorrector {
       System.out.println("query: " + query);
       String[] q = query.split("\\s+");
       ArrayList<String> origQuery = new ArrayList<String>();
+      Set< ArrayList< Pair <String, String > > > possibleQueries = null;
+      String prevWord = null;
       for (String w : q) {
     	  origQuery.add(w);
+    	  possibleQueries = CandidateGenerator.get().getCandidates(possibleQueries, w, prevWord);
+    	  //call cost model on possible queries
+    	  //get costs 
+    	  //take top 100 (or whatever number we want)
+    	  prevWord = w;
       }
-      Set <ArrayList <Pair <String, String> > > candidates = CandidateGenerator.get().getCandidates(query);
-      System.out.println("total size: " + candidates.size());
+      
+      
 //      Set<ArrayList<String> > candidates = CandidateGenerator.get().getCandidates(query);
 //      UniformCostModel scorer = new UniformCostModel();
 //      double maxScore = -1;

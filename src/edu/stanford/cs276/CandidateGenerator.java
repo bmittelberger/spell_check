@@ -39,7 +39,7 @@ public class CandidateGenerator implements Serializable {
 		Set<ArrayList<Pair<String, String> > >candidates = new HashSet<ArrayList<Pair<String, String> > >();
 		
 		
-		/prevWord are no digits in the word, it is unlikely that we should add any.
+		//prevWord are no digits in the word, it is unlikely that we should add any.
 		if (word.matches(".*\\d+.*")) {
 			alphabetToUse = alphabet;
 		} else {
@@ -165,7 +165,7 @@ public class CandidateGenerator implements Serializable {
 			if (i - 1 == 0) {
 				edit += "BEGIN$";
 			} else {
-				edit += word.charAt(i - 1);
+				edit += word.charAt(i - 2);
 			}
 			edit += "-" + editChar;
 		}
