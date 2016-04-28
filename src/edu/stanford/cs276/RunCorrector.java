@@ -96,6 +96,7 @@ public class RunCorrector {
 
       
       for (String w : q) {
+    	 
     	  origQuery.add(w);
     	  possibleQueries = CandidateGenerator.get().getCandidates(possibleQueries, w, prevWord);
     	  PriorityQueue<PossibleQuery> pruned = new PriorityQueue<PossibleQuery>();

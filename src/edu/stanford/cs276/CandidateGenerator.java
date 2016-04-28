@@ -46,11 +46,20 @@ public class CandidateGenerator implements Serializable {
 		} else {
 			alphabetToUse = noNumbers;
 		}
-		Set<Pair<String, String> > wordCands = generateCandidateWords(word, lm, alphabetToUse);
+		
+		Set<Pair<String, String> > wordCands = null;
+		if (!word.matches(".*[a-zA-Z].*")) {
+			wordCands = new HashSet<Pair < String, String > > ();
+		} else {
+			wordCands = generateCandidateWords(word, lm, alphabetToUse);
+		}
+		 
 		if (lm.wordExists(word)) {
 			System.out.println("**** adding: " + word);
 			wordCands.add(new Pair<String, String>(word, "none"));
 		}
+
+		
 
 		
 		System.out.println("Word: " + word + ", num candidates: " + wordCands.size());
