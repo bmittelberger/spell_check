@@ -71,10 +71,31 @@ public class RunCorrector {
      */
     while ((query = queriesFileReader.readLine()) != null) {
 
+    
       String correctedQuery = query;
       System.out.println("query: " + query);
+      String[] q = query.split("\\s+");
+      ArrayList<String> origQuery = new ArrayList<String>();
+      for (String w : q) {
+    	  origQuery.add(w);
+      }
       Set<ArrayList<String> > candidates = CandidateGenerator.get().getCandidates(query);
-
+      UniformCostModel scorer = new UniformCostModel();
+      double maxScore = -1;
+      ArrayList<String> bestQuery = null;
+      for (ArrayList<String> candidate : candidates) {
+    	 double score = scorer.editProbability(origQuery, candidate, 1);
+//    	 System.out.println("Candidate Query: " + candidate.toString());
+//    	 System.out.println("Score: " + score);
+    	 if (score > maxScore) {
+    		 maxScore = score;
+    		 bestQuery = candidate;
+    	 }
+      }
+      
+      System.out.println("Original Query: " + origQuery.toString());
+      System.out.println("Best Guess Query: " + bestQuery.toString());
+      System.out.println();
       /*
        * Your code here: currently the correctQuery and original query are the same
        * Complete this implementation so that the spell corrector corrects the 
@@ -108,7 +129,7 @@ public class RunCorrector {
        * IMPORTANT: In your final submission DO NOT add any additional print statements as 
        * this will interfere with the autograder
        */
-      System.out.println(correctedQuery);
+//      System.out.println(correctedQuery);
     }
     queriesFileReader.close();
   }

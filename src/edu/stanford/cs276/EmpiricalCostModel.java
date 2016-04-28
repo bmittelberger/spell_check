@@ -1,4 +1,5 @@
 package edu.stanford.cs276;
+import java.util.ArrayList;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -12,7 +13,7 @@ import java.util.Scanner;
 public class EmpiricalCostModel implements EditCostModel {
 	private static final long serialVersionUID = 1L;
 	
-  public EmpiricalCostModel(String editsFile) throws IOException {
+  public EmpiricalCostModel(String editsFile) throws Exception {
     BufferedReader input = new BufferedReader(new FileReader(editsFile));
     System.out.println("Constructing edit distance map...");
     String line = null;
@@ -32,7 +33,7 @@ public class EmpiricalCostModel implements EditCostModel {
 
   // You need to update this to calculate the proper empirical cost
   @Override
-  public double editProbability(String original, String R, int distance) {
+  public double editProbability(ArrayList<String> original, ArrayList<String> R, int distance) throws Exception {
     return 0.5;
     /*
      * TODO: Your code here

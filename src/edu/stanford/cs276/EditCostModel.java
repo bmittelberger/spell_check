@@ -1,6 +1,7 @@
 package edu.stanford.cs276;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public interface EditCostModel extends Serializable {
 	/**
@@ -11,5 +12,5 @@ public interface EditCostModel extends Serializable {
 	 * @param distance
 	 * @return
 	 */
-  public double editProbability(String original, String R, int distance);
+  public double editProbability(ArrayList<String> original, ArrayList<String> R, int distance) throws Exception;
 }
