@@ -1,6 +1,7 @@
 package edu.stanford.cs276;
 
 import java.io.Serializable;
+import edu.stanford.cs276.util.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -11,7 +12,7 @@ public class CandidateGenerator implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static CandidateGenerator cg_;
-	private static final int MIN_RELEVANCE_THRESHOLD = 3;
+	private static final int MIN_RELEVANCE_THRESHOLD = 10;
 
 	// Don't use the constructor since this is a Singleton instance
 	private CandidateGenerator() {
@@ -32,11 +33,11 @@ public class CandidateGenerator implements Serializable {
 			'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ', ',' };
 
 	// Generate all candidates for the target query
-	public Set<ArrayList<Pair <String, String> > > getCandidates(Set<ArrayList<Pair < String, String>  > > prevQueries, 
+	public Set<PossibleQuery > getCandidates(Set<PossibleQuery > prevQueries, 
 				String word, String prevWord) throws Exception {
 		LanguageModel lm = LanguageModel.load();
 		Character[] alphabetToUse = null;
-		Set<ArrayList<Pair<String, String> > >candidates = new HashSet<ArrayList<Pair<String, String> > >();
+		Set<PossibleQuery> candidates = new HashSet<PossibleQuery>();
 		
 		
 		//prevWord are no digits in the word, it is unlikely that we should add any.
@@ -47,6 +48,7 @@ public class CandidateGenerator implements Serializable {
 		}
 		Set<Pair<String, String> > wordCands = generateCandidateWords(word, lm, alphabetToUse);
 		if (lm.wordExists(word)) {
+			System.out.println("**** adding: " + word);
 			wordCands.add(new Pair<String, String>(word, "none"));
 		}
 
@@ -54,10 +56,11 @@ public class CandidateGenerator implements Serializable {
 		System.out.println("Word: " + word + ", num candidates: " + wordCands.size());
 		// Perform Cartesian Product
 		if (prevQueries != null) {
-			Set<ArrayList<Pair<String, String> > > currSet = new HashSet<ArrayList<Pair<String, String> > >();
+			Set<PossibleQuery > currSet = new HashSet<PossibleQuery >();
 			for (Pair<String, String> candidate : wordCands) {
 
-				for (ArrayList<Pair<String, String> > candQuery: prevQueries) {
+				for (PossibleQuery candQueryObj: prevQueries) {
+					ArrayList<Pair<String, String> > candQuery = candQueryObj.getQuery();
 					ArrayList<Pair<String, String> > newCandQuery = new ArrayList<Pair <String, String> >(candQuery);
 					
 					//in the case where we combine words
@@ -68,19 +71,17 @@ public class CandidateGenerator implements Serializable {
 					} else {
 						newCandQuery.add(candidate);
 					}
-					currSet.add(newCandQuery);
+					currSet.add(new PossibleQuery(newCandQuery));
 				}
 			}
 			prevQueries = currSet;
 		} else {
-			prevQueries = new HashSet<ArrayList<Pair<String, String>> >();
+			prevQueries = new HashSet<PossibleQuery >();
 			for (Pair<String, String> candidate: wordCands) {
-				ArrayList<Pair<String, String> > newQuery = new ArrayList<Pair<String, String> >();
-				newQuery.add(candidate);
+				PossibleQuery newQuery = new PossibleQuery(candidate);
 				prevQueries.add(newQuery);
 			}
 		}
-		
 		candidates = prevQueries;
 		return candidates;
 	}
@@ -117,7 +118,7 @@ public class CandidateGenerator implements Serializable {
 				} else {
 					insertWord = word.substring(0, i) + c + word.substring(i); 
 				}
-				replaceWord = word.substring(0, i) + c + word.substring(i + 1);
+				
 
 				if (c.equals(' ')) {
 					String[] words = insertWord.split(" ");
@@ -129,12 +130,15 @@ public class CandidateGenerator implements Serializable {
 				} else if (lm.unigram.count(insertWord) > MIN_RELEVANCE_THRESHOLD) {
 					String edit = this.createEdit("ins", word, i + 1, c);
 					candidates.add(new Pair<String, String>(insertWord, edit));
-				}				
-				if (lm.unigram.count(replaceWord) > MIN_RELEVANCE_THRESHOLD) {
-					String edit = "rep-";
-					edit += word.charAt(i);
-					edit += "-" + c;
-					candidates.add(new Pair<String, String>(replaceWord, edit));
+				}		
+				if (c != word.charAt(i)) {
+					replaceWord = word.substring(0, i) + c + word.substring(i + 1);
+					if (lm.unigram.count(replaceWord) > MIN_RELEVANCE_THRESHOLD) {
+						String edit = "rep-";
+						edit += word.charAt(i);
+						edit += "-" + c;
+						candidates.add(new Pair<String, String>(replaceWord, edit));
+					}
 				}
 			}
 		}

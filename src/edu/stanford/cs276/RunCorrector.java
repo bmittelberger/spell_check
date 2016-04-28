@@ -1,22 +1,25 @@
 package edu.stanford.cs276;
 
 import java.io.BufferedReader;
+import java.util.PriorityQueue;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Set;
 
 import edu.stanford.cs276.util.Pair;
-
+import edu.stanford.cs276.util.PossibleQuery;
 
 public class RunCorrector {
 
-  public static LanguageModel languageModel;
-  public static NoisyChannelModel nsm;
+	public static LanguageModel languageModel;
+	public static NoisyChannelModel nsm;
 
-  private static int PRUNING_THRESHOLD = 100;
-  
-  public static void main(String[] args) throws Exception {
+	private static int PRUNING_THRESHOLD = 100;
+
+	public static void main(String[] args) throws Exception {
     System.out.println("Starting Corrector...");
     // Parse input arguments
     String uniformOrEmpirical = null;
@@ -80,16 +83,48 @@ public class RunCorrector {
       System.out.println("query: " + query);
       String[] q = query.split("\\s+");
       ArrayList<String> origQuery = new ArrayList<String>();
-      Set< ArrayList< Pair <String, String > > > possibleQueries = null;
+      Set< PossibleQuery > possibleQueries = null;
       String prevWord = null;
+      
+      EditCostModel scorer = null;
+      if (uniformOrEmpirical.equals("uniform")) {
+    	  scorer = new UniformCostModel();
+      }
+//      } else {
+//    	  scorer = new EmpiricalCostModel();
+//      }
+
+      
       for (String w : q) {
     	  origQuery.add(w);
     	  possibleQueries = CandidateGenerator.get().getCandidates(possibleQueries, w, prevWord);
-    	  //call cost model on possible queries
-    	  //get costs 
-    	  //take top 100 (or whatever number we want)
+    	  PriorityQueue<PossibleQuery> pruned = new PriorityQueue<PossibleQuery>();
+    	  for (PossibleQuery pq : possibleQueries) {
+    		  pq.setScore(scorer.editProbability(origQuery, pq, 2));
+    		  pruned.add(pq);
+    	  }
+    	  System.out.println();
+    	  
+    	  PossibleQuery pq = null;
+    	  Set<PossibleQuery> prunedQueries = new HashSet<PossibleQuery>();
+    	  while ((pq = pruned.poll()) != null && prunedQueries.size() <= PRUNING_THRESHOLD) {
+//    		  System.out.println(pq.toString());
+    		  prunedQueries.add(pq);
+    	  }
+    	  possibleQueries = prunedQueries;
     	  prevWord = w;
       }
+      
+      double max = 0;
+      PossibleQuery best = null;
+      for (PossibleQuery pq : possibleQueries) {
+  		if (pq.getScore() > max) {
+  			best = pq;
+  			max = pq.getScore();
+  		}
+      }
+      System.out.println();
+      System.out.println("Best Guess:" + best.toString());
       
       
 //      Set<ArrayList<String> > candidates = CandidateGenerator.get().getCandidates(query);
@@ -146,4 +181,13 @@ public class RunCorrector {
     }
     queriesFileReader.close();
   }
+
+	public class QueryComparator implements Comparator<ArrayList<Pair<String, String>>> {
+
+		@Override
+		public int compare(ArrayList<Pair<String, String>> o1, ArrayList<Pair<String, String>> o2) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+	}
 }
