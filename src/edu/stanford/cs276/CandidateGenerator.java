@@ -12,7 +12,7 @@ public class CandidateGenerator implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static CandidateGenerator cg_;
-	private static final int MIN_RELEVANCE_THRESHOLD = 10;
+	private static final int MIN_RELEVANCE_THRESHOLD = 1;
 
 	// Don't use the constructor since this is a Singleton instance
 	private CandidateGenerator() {

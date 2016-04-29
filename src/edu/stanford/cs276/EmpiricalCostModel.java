@@ -17,7 +17,7 @@ import edu.stanford.cs276.util.PossibleQuery;
 public class EmpiricalCostModel implements EditCostModel {
 	private static final long serialVersionUID = 1L;
 	private static double lambda = .5;
-	private static double mu = 1.0; // the dampening factor on language model p(Q)
+	//private static double mu = 1.0; // the dampening factor on language model p(Q)
 	Map<String, Integer> uni_letter_counts = new HashMap<String, Integer>();
 	Map<Pair<String, String>, Integer> bi_letter_counts = new HashMap<Pair<String, String>, Integer>();
 	Map<Pair<String, String>, Integer> sub_counts = new HashMap<Pair<String, String>, Integer>();
@@ -61,9 +61,9 @@ public class EmpiricalCostModel implements EditCostModel {
 
 						// update unigram letter counts
 
-						if (uni_letter_counts.containsKey(String.valueOf(clean.charAt(i)))) {
-							Integer current = uni_letter_counts.get(String.valueOf(clean.charAt(i)));
-							uni_letter_counts.put(String.valueOf(clean.charAt(i)), current++);
+						if (uni_letter_counts.containsKey( String.valueOf(clean.charAt(i)) ) ) {
+							//Integer current = uni_letter_counts.get(String.valueOf(clean.charAt(i)));
+							uni_letter_counts.put( String.valueOf(clean.charAt(i) ) , uni_letter_counts.get( String.valueOf( clean.charAt( i ) ) ) + 1 );
 						} else {
 							uni_letter_counts.put(String.valueOf(clean.charAt(i)), Integer.valueOf(1));
 						}
@@ -73,8 +73,8 @@ public class EmpiricalCostModel implements EditCostModel {
 							Pair<String, String> true_pair = new Pair<String, String>(String.valueOf(clean.charAt(i)),
 									String.valueOf(clean.charAt(i + 1)));
 							if (bi_letter_counts.containsKey(true_pair)) {
-								Integer current = bi_letter_counts.get(true_pair);
-								bi_letter_counts.put(true_pair, current++);
+								//Integer current = bi_letter_counts.get(true_pair);
+								bi_letter_counts.put(true_pair, bi_letter_counts.get( true_pair ) + 1 );
 							} else {
 								bi_letter_counts.put(true_pair, Integer.valueOf(1));
 							}
@@ -145,8 +145,8 @@ public class EmpiricalCostModel implements EditCostModel {
 
 						// update unigram letter counts
 						if (uni_letter_counts.containsKey(String.valueOf(clean.charAt(i)))) {
-							Integer current = uni_letter_counts.get(String.valueOf(clean.charAt(i)));
-							uni_letter_counts.put(String.valueOf(clean.charAt(i)), current++);
+							//Integer current = uni_letter_counts.get(String.valueOf(clean.charAt(i)));
+							uni_letter_counts.put(String.valueOf(clean.charAt(i)), uni_letter_counts.get( String.valueOf(clean.charAt(i)) ) + 1 );
 						} else {
 							uni_letter_counts.put(String.valueOf(clean.charAt(i)), Integer.valueOf(1));
 						}
@@ -155,8 +155,8 @@ public class EmpiricalCostModel implements EditCostModel {
 						Pair<String, String> true_pair = new Pair<String, String>(String.valueOf(clean.charAt(i)),
 								String.valueOf(clean.charAt(i + 1)));
 						if (bi_letter_counts.containsKey(true_pair)) {
-							Integer current = bi_letter_counts.get(true_pair);
-							bi_letter_counts.put(true_pair, current++);
+							// Integer current = bi_letter_counts.get(true_pair);
+							bi_letter_counts.put(true_pair, bi_letter_counts.get( true_pair ) + 1 );
 						} else {
 							bi_letter_counts.put(true_pair, Integer.valueOf(1));
 						}
@@ -218,8 +218,8 @@ public class EmpiricalCostModel implements EditCostModel {
 
 						// update unigram letter counts
 						if (uni_letter_counts.containsKey(String.valueOf(clean.charAt(i)))) {
-							Integer current = uni_letter_counts.get(String.valueOf(clean.charAt(i)));
-							uni_letter_counts.put(String.valueOf(clean.charAt(i)), current++);
+							//Integer current = uni_letter_counts.get(String.valueOf(clean.charAt(i)));
+							uni_letter_counts.put(String.valueOf(clean.charAt(i)), uni_letter_counts.get(String.valueOf(clean.charAt(i))) + 1 );
 						} else {
 							uni_letter_counts.put(String.valueOf(clean.charAt(i)), Integer.valueOf(1));
 						}
@@ -228,8 +228,8 @@ public class EmpiricalCostModel implements EditCostModel {
 						Pair<String, String> true_pair = new Pair<String, String>(String.valueOf(clean.charAt(i)),
 								String.valueOf(clean.charAt(i + 1)));
 						if (bi_letter_counts.containsKey(true_pair)) {
-							Integer current = bi_letter_counts.get(true_pair);
-							bi_letter_counts.put(true_pair, current++);
+							// Integer current = bi_letter_counts.get(true_pair);
+							bi_letter_counts.put(true_pair, bi_letter_counts.get( true_pair ) + 1 );
 						} else {
 							bi_letter_counts.put(true_pair, Integer.valueOf(1));
 						}
@@ -317,9 +317,10 @@ public class EmpiricalCostModel implements EditCostModel {
 	 if ( ! edit_found ){
 		 p_r_q = .95;
 	 }
+	// System.out.println( "P(R|Q): " + p_r_q ); 
 	 
 	 for ( int i = 0 ; i < candidate_words.size(); i ++  ){
-		  //String[] words = word_pairs.get(i).getFirst().split( " " ) ;
+	
 		  if (i == 0) {
 			  double prob = (double) lm.unigram.count( candidate_words.get( i ) ) / (double)lm.unigram.getTermCount() ; 
 			  p_q *= prob ;
@@ -333,7 +334,7 @@ public class EmpiricalCostModel implements EditCostModel {
 	  }
 	  
 	 
-	 return p_r_q * Math.pow( p_q , mu );
+	 return p_r_q * Math.pow( p_q , 1.5 );
 
   }
   
@@ -343,9 +344,11 @@ public class EmpiricalCostModel implements EditCostModel {
 	  String edit_1 = edit_elems[ 1 ];
 	  String edit_2 = edit_elems[ 2 ];
 	  
+	  
 	  Pair<String,String> letter_pair = new Pair<String,String>( edit_1, edit_2 );
 	  
 	  double vocab_size = (double) uni_letter_counts.keySet().size();
+	//  System.out.println( "VOCAB SIZE: " + vocab_size  );
 	  
 	  double numerator = 1.0 ;
 	  double denominator = 1.0;
@@ -390,6 +393,10 @@ public class EmpiricalCostModel implements EditCostModel {
 		  denominator += 2.0;
 	  }
 	  
+	 // System.out.println( "EDIT: " + edit );
+	  //System.out.println( "NUMERATOR: " + numerator );
+	  //System.out.println( "DENOMINATOR: " + denominator );
+	  //System.out.println( "PROB: " + numerator / denominator );
 	  
 	  return numerator / denominator ;
   }

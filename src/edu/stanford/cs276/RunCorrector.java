@@ -120,7 +120,16 @@ public class RunCorrector {
   			max = pq.getScore();
   		}
       }
-      
+      /*
+      if ( best.asQuery().equals( "" ) ){
+    	  System.out.println( "BEST QUERY EMPTY" );
+    	  ArrayList< Pair< String, String >> orig_query = new ArrayList< Pair<String, String >>();
+    	  for ( String word : query.split( " " ) ){
+    		  orig_query.add( new Pair<String,String>( word , "none" )  );
+    	  }
+    	  best = new PossibleQuery( orig_query );  
+      }
+      */
       
       
       if ("extra".equals(extra)) {
