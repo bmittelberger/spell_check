@@ -17,7 +17,7 @@ public class RunCorrector {
 	public static LanguageModel languageModel;
 	public static NoisyChannelModel nsm;
 
-	private static int PRUNING_THRESHOLD = 30;
+	private static int PRUNING_THRESHOLD = 50;
 
 	public static void main(String[] args) throws Exception {
     System.out.println("Starting Corrector...");
@@ -80,22 +80,16 @@ public class RunCorrector {
     double numCorrect = 0;
     double totalQueries = 0;
     
+    
     while ((query = queriesFileReader.readLine()) != null) {
 
+    	
     
-      String correctedQuery = query;
       String[] q = query.split("\\s+");
       ArrayList<String> origQuery = new ArrayList<String>();
       Set< PossibleQuery > possibleQueries = null;
       String prevWord = null;
       
-      EditCostModel scorer = null;
-      if (uniformOrEmpirical.equals("uniform")) {
-    	  scorer = new UniformCostModel();
-      }
-//      } else {
-//    	  scorer = new EmpiricalCostModel();
-//      }
 
       
       for (String w : q) {
@@ -104,7 +98,7 @@ public class RunCorrector {
     	  possibleQueries = CandidateGenerator.get().getCandidates(possibleQueries, w, prevWord);
     	  PriorityQueue<PossibleQuery> pruned = new PriorityQueue<PossibleQuery>();
     	  for (PossibleQuery pq : possibleQueries) {
-    		  pq.setScore(scorer.editProbability(origQuery, pq, 2));
+    		  pq.setScore(nsm.ecm_.editProbability(origQuery, pq, 2));
     		  pruned.add(pq);
     	  }
     	  

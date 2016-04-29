@@ -7,6 +7,8 @@ import edu.stanford.cs276.util.*;
  * that any single edit in the Damerau-Levenshtein distance is equally likely,
  * i.e., having the same probability
  */
+
+// deal with log probs . 
 public class UniformCostModel implements EditCostModel {
 	
 	private static final long serialVersionUID = 1L;
@@ -35,7 +37,7 @@ public class UniformCostModel implements EditCostModel {
 			  count_mistakes++ ;
 		  }
 		  for ( int i = 0 ; i < words.length ; i ++ ){
-			  candidate_words.add( words[i ] ); 
+			  candidate_words.add( words[ i ] ); 
 		  }
 	  }
 	  

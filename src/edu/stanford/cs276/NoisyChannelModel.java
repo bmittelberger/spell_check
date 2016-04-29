@@ -82,6 +82,7 @@ public class NoisyChannelModel implements Serializable {
    */
   public void setProbabilityType(String type) throws Exception {
     if (type.equals("empirical")) {
+    	System.out.println("setting to empirical");
       ecm_ = this.empiricalCostModel;
     } else if (type.equals("uniform")) {
       ecm_ = this.uniformCostModel;
